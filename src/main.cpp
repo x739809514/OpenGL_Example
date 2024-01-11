@@ -50,14 +50,17 @@ int main()
     }
     glViewport(0, 0, 800, 800);
 
-    float vertices[6] = {
+    float position[6] = {
         -0.5f, -0.5f,
         0, 0.5f,
         0.5f, -0.5f};
     unsigned int bufferId;
     glGenBuffers(1, &bufferId);
     glBindBuffer(GL_ARRAY_BUFFER, bufferId);
-    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), position, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+
     // start rendering
     while (glfwWindowShouldClose(window) == false)
     {
