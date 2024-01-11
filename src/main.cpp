@@ -5,14 +5,14 @@
 #include <stdlib.h>
 #include <iostream>
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
 void processInput(GLFWwindow *window)
 {
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
 
@@ -43,27 +43,48 @@ int main()
     // glad is a library which is used to manage function pointer of opengl
     // since opengl is cross-platform, it doesn't bind function to any specific platform
     // so we need to get pointers form opengl and manage them
-    if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)==false)
+    if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) == false)
     {
         std::cout << "fail to load glad" << std::endl;
         return -1;
     }
-
     glViewport(0, 0, 800, 800);
+
+    float vertices[6] = {
+        -0.5f, -0.5f,
+        0, 0.5f,
+        0.5f, -0.5f};
+    unsigned int bufferId;
+    glGenBuffers(1, &bufferId);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferId);
+    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), vertices, GL_STATIC_DRAW);
     // start rendering
     while (glfwWindowShouldClose(window) == false)
     {
         // detect key escape event
         processInput(window);
-        //set clear color
-        glClearColor(0.9f,0.3f,0.3f,1.0f);
-        //clear color buffer
+        // set clear color
+        glClearColor(0.9f, 0.3f, 0.3f, 1.0f);
+        // clear color buffer
         glClear(GL_COLOR_BUFFER_BIT);
-        //double buffer tech
+
+#pragma region already abandoned
+        // draw triangle
+        // glBegin(GL_TRIANGLES);
+        // glVertex2f(-0.5f, -0.5f);
+        // glVertex2f(0, 0.5f);
+        // glVertex2f(0.5f, -0.5f);
+        // glEnd();
+#pragma endregion
+
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        // double buffer tech
         glfwSwapBuffers(window);
-        //func call all the event since the last call
+        // func call all the event since the last call
         glfwPollEvents();
     }
+    glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
 }
