@@ -7,6 +7,11 @@
 #include <fstream>
 #include <sstream>
 
+#define ASSERT(x) if(!(x)) break;
+#define GLCALL(x) ClearError();\
+        x;\
+        ASSERT(CheckError(#x, __FILE__,__LINE__))
+
 enum class ShaderType
 {
     None = -1,
@@ -20,6 +25,23 @@ struct ShaderProgram
     std::string fragment;
 };
 
+#pragma region Error
+static void ClearError()
+{
+    while (glGetError()!=GL_NO_ERROR);
+}
+
+static bool CheckError(const char* func, const char* file, int line)
+{
+    while (GLenum error = glGetError())
+    {
+        std::cout << "[OpenGL error:]" << error << file << ": " << line << std::endl;
+        return false;
+    }
+    return true;
+    
+}
+#pragma endregion
 
 static ShaderProgram ParseShader(const std::string filepath)
 {
@@ -134,21 +156,37 @@ int main()
     }
     glViewport(0, 0, 800, 600);
 
-    float positions[6] = {
+    float positions[] = {
         -0.5f, -0.5f,
-        0.0f, 0.5f,
-        0.5f, -0.5f};
-    unsigned int bufferId;
-    glGenBuffers(1, &bufferId);
-    glBindBuffer(GL_ARRAY_BUFFER, bufferId);
-    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+        0.5f, -0.5f,
+        0.5f, 0.5f,
+        -0.5f, 0.5f,
+        // 0.5f, 0.5f,
+        // -0.5f, 0.5f,
+        // -0.5f, -0.5f,
+        };
+    unsigned int indices[]={
+        0,1,2,
+        2,3,0
+    };
     unsigned int VAO;
     glGenVertexArrays(1,&VAO);
     glBindVertexArray(VAO);
+
+    unsigned int buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
+
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+
+    unsigned int ido;
+    glGenBuffers(1, &ido);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ido);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
     glBindVertexArray(0);
-    
+
     ShaderProgram source = ParseShader("/Users/innovation/CodePlace/OpenGL_Example/src/resource/shader/Triangle.shader");
     std::cout << "Vertex" << std::endl;
     std::cout << source.vertex << std::endl;
@@ -178,7 +216,8 @@ int main()
 #pragma endregion
         glBindVertexArray(VAO);
         glUseProgram(shader);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_INT,nullptr);
+        //glDrawArrays(GL_TRIANGLES,0,6);
 
         // double buffer tech
         glfwSwapBuffers(window);
