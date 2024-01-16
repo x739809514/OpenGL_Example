@@ -4,6 +4,50 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
+#include <sstream>
+
+enum class ShaderType
+{
+    None = -1,
+    Vertex =0,
+    Fragment = 1,
+};
+
+struct ShaderProgram
+{
+    std::string vertex;
+    std::string fragment;
+};
+
+
+static ShaderProgram ParseShader(const std::string filepath)
+{
+    std::ifstream inFile(filepath);
+    std::string line;
+    ShaderType type = ShaderType::None;
+    std::stringstream ss[2];
+
+    while (getline(inFile,line))
+    {
+        if(line.find("#Shader")!=std::string::npos)
+        {
+            if(line.find("vertex")!=std::string::npos)
+            {
+                // get vertex str
+                type = ShaderType::Vertex;
+            }else if(line.find("fragment")!=std::string::npos)
+            {
+                // get fragment str
+                type = ShaderType::Fragment;
+            }
+        }else{
+            ss[(int)type] << line << '\n';
+        }
+    }
+    inFile.close();
+    return {ss[0].str(),ss[1].str()};
+}
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
@@ -104,26 +148,13 @@ int main()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
     glBindVertexArray(0);
-    std::string vertextShader= 
-    "#version 330 core\n"
-    "\n"
-    "layout(location=0) in vec4 position;"
-    "\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = position;\n"
-    "}\n";
-
-    std::string fragmentShader= 
-    "#version 330 core\n"
-    "\n"
-    "layout(location=0) out vec4 color;"
-    "\n"
-    "void main()\n"
-    "{\n"
-    "   color = vec4(1.0, 0.0, 0.0, 1.0);\n"
-    "}\n";
-    unsigned int shader = CreateShader(vertextShader,fragmentShader);
+    
+    ShaderProgram source = ParseShader("/Users/innovation/CodePlace/OpenGL_Example/src/resource/shader/Triangle.shader");
+    std::cout << "Vertex" << std::endl;
+    std::cout << source.vertex << std::endl;
+    std::cout << "Fragment" << std::endl;
+    std::cout << source.fragment << std::endl;
+    unsigned int shader = CreateShader(source.vertex,source.fragment);
     
 
 
