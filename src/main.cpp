@@ -7,7 +7,7 @@
 #include <fstream>
 #include <sstream>
 
-#define ASSERT(x) if(!(x)) break;
+#define ASSERT(x) if(!(x)) __debugbreak();
 #define GLCALL(x) ClearError();\
         x;\
         ASSERT(CheckError(#x, __FILE__,__LINE__))
@@ -122,6 +122,7 @@ static unsigned int CreateShader(std::string &vertextShader, std::string &fragme
 
 int main()
 {
+    
     if (glfwInit() == false)
     {
         return -1;
@@ -142,6 +143,7 @@ int main()
         glfwTerminate();
         return -1;
     }
+    glfwSwapInterval(1);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // make cur thread context is the opengl context
@@ -194,8 +196,9 @@ int main()
     std::cout << source.fragment << std::endl;
     unsigned int shader = CreateShader(source.vertex,source.fragment);
     
-
-
+    int location = glGetUniformLocation(shader,"u_color");
+    float r=0.0f;
+    float increment=0.0f;
     // start rendering
     while (glfwWindowShouldClose(window) == false)
     {
@@ -206,14 +209,19 @@ int main()
         // clear color buffer
         glClear(GL_COLOR_BUFFER_BIT);
 
-#pragma region already abandoned
-        // draw triangle
-        // glBegin(GL_TRIANGLES);
-        // glVertex2f(-0.5f, -0.5f);
-        // glVertex2f(0, 0.5f);
-        // glVertex2f(0.5f, -0.5f);
-        // glEnd();
-#pragma endregion
+        if(location!=-1)
+        {
+            glUniform4f(location,r,0.8f,0.5f,1.0f);
+        }
+        if (r>=1.0f)
+        {
+            increment-=0.2f;
+        }else if(r<=0.0f)
+        {
+            increment+=0.2f;
+        }
+        r+=increment;
+
         glBindVertexArray(VAO);
         glUseProgram(shader);
         glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_INT,nullptr);
