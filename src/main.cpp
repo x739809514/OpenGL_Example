@@ -7,15 +7,14 @@
 #include <fstream>
 #include <sstream>
 
-#define ASSERT(x) if(!(x)) __debugbreak();
-#define GLCALL(x) ClearError();\
-        x;\
-        ASSERT(CheckError(#x, __FILE__,__LINE__))
+#include "Renderer.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 
 enum class ShaderType
 {
     None = -1,
-    Vertex =0,
+    Vertex = 0,
     Fragment = 1,
 };
 
@@ -25,24 +24,6 @@ struct ShaderProgram
     std::string fragment;
 };
 
-#pragma region Error
-static void ClearError()
-{
-    while (glGetError()!=GL_NO_ERROR);
-}
-
-static bool CheckError(const char* func, const char* file, int line)
-{
-    while (GLenum error = glGetError())
-    {
-        std::cout << "[OpenGL error:]" << error << file << ": " << line << std::endl;
-        return false;
-    }
-    return true;
-    
-}
-#pragma endregion
-
 static ShaderProgram ParseShader(const std::string filepath)
 {
     std::ifstream inFile(filepath);
@@ -50,25 +31,28 @@ static ShaderProgram ParseShader(const std::string filepath)
     ShaderType type = ShaderType::None;
     std::stringstream ss[2];
 
-    while (getline(inFile,line))
+    while (getline(inFile, line))
     {
-        if(line.find("#Shader")!=std::string::npos)
+        if (line.find("#Shader") != std::string::npos)
         {
-            if(line.find("vertex")!=std::string::npos)
+            if (line.find("vertex") != std::string::npos)
             {
                 // get vertex str
                 type = ShaderType::Vertex;
-            }else if(line.find("fragment")!=std::string::npos)
+            }
+            else if (line.find("fragment") != std::string::npos)
             {
                 // get fragment str
                 type = ShaderType::Fragment;
             }
-        }else{
+        }
+        else
+        {
             ss[(int)type] << line << '\n';
         }
     }
     inFile.close();
-    return {ss[0].str(),ss[1].str()};
+    return {ss[0].str(), ss[1].str()};
 }
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
@@ -89,16 +73,16 @@ static unsigned int CompileShader(unsigned int type, std::string &source)
     glShaderSource(id, 1, &str, NULL);
     glCompileShader(id);
 
-    //Error handing
+    // Error handing
     int success;
-    glGetShaderiv(id,GL_COMPILE_STATUS,&success);
-    if(success == GL_FALSE)
+    glGetShaderiv(id, GL_COMPILE_STATUS, &success);
+    if (success == GL_FALSE)
     {
         int length;
-        glGetShaderiv(id,GL_INFO_LOG_LENGTH,&length);
-        char* info = (char*)alloca(length*sizeof(char));
-        glGetShaderInfoLog(id,length,&length,info);
-        std::cout<< "Error: "<< (type == GL_VERTEX_SHADER ? "vertex shader" : "fragment shader") << "Shader Compiled Failed!"<< info << std::endl;
+        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+        char *info = (char *)alloca(length * sizeof(char));
+        glGetShaderInfoLog(id, length, &length, info);
+        std::cout << "Error: " << (type == GL_VERTEX_SHADER ? "vertex shader" : "fragment shader") << "Shader Compiled Failed!" << info << std::endl;
         glDeleteShader(id);
         return 0;
     }
@@ -109,10 +93,10 @@ static unsigned int CompileShader(unsigned int type, std::string &source)
 static unsigned int CreateShader(std::string &vertextShader, std::string &fragmentShader)
 {
     unsigned int program = glCreateProgram();
-    unsigned int vs = CompileShader(GL_VERTEX_SHADER,vertextShader);
-    unsigned int fs = CompileShader(GL_FRAGMENT_SHADER,fragmentShader);
-    glAttachShader(program,vs);
-    glAttachShader(program,fs);
+    unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertextShader);
+    unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
+    glAttachShader(program, vs);
+    glAttachShader(program, fs);
     glLinkProgram(program);
     glValidateProgram(program);
     glDeleteShader(vs);
@@ -122,7 +106,7 @@ static unsigned int CreateShader(std::string &vertextShader, std::string &fragme
 
 int main()
 {
-    
+
     if (glfwInit() == false)
     {
         return -1;
@@ -159,34 +143,29 @@ int main()
     glViewport(0, 0, 800, 600);
 
     float positions[] = {
-        -0.5f, -0.5f,
-        0.5f, -0.5f,
-        0.5f, 0.5f,
-        -0.5f, 0.5f,
-        // 0.5f, 0.5f,
-        // -0.5f, 0.5f,
-        // -0.5f, -0.5f,
-        };
-    unsigned int indices[]={
-        0,1,2,
-        2,3,0
+        -0.5f,
+        -0.5f,
+        0.5f,
+        -0.5f,
+        0.5f,
+        0.5f,
+        -0.5f,
+        0.5f,
     };
+    unsigned int indices[] = {
+        0, 1, 2,
+        2, 3, 0};
     unsigned int VAO;
-    glGenVertexArrays(1,&VAO);
+    glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
-    unsigned int buffer;
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
+    VertexBuffer vb(4 * 2 * sizeof(float), positions);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
 
-    unsigned int ido;
-    glGenBuffers(1, &ido);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ido);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+    //unsigned int ibo;
+    IndexBuffer indexBuffer(6 * sizeof(unsigned int), indices);
     glBindVertexArray(0);
 
     ShaderProgram source = ParseShader("/Users/innovation/CodePlace/OpenGL_Example/src/resource/shader/Triangle.shader");
@@ -194,11 +173,11 @@ int main()
     std::cout << source.vertex << std::endl;
     std::cout << "Fragment" << std::endl;
     std::cout << source.fragment << std::endl;
-    unsigned int shader = CreateShader(source.vertex,source.fragment);
-    
-    int location = glGetUniformLocation(shader,"u_color");
-    float r=0.0f;
-    float increment=0.0f;
+    unsigned int shader = CreateShader(source.vertex, source.fragment);
+
+    int location = glGetUniformLocation(shader, "u_color");
+    float r = 0.0f;
+    float increment = 0.0f;
     // start rendering
     while (glfwWindowShouldClose(window) == false)
     {
@@ -209,23 +188,25 @@ int main()
         // clear color buffer
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if(location!=-1)
+        if (location != -1)
         {
-            glUniform4f(location,r,0.8f,0.5f,1.0f);
+            glUniform4f(location, r, 0.8f, 0.5f, 1.0f);
         }
-        if (r>=1.0f)
+        if (r >= 1.0f)
         {
-            increment-=0.2f;
-        }else if(r<=0.0f)
-        {
-            increment+=0.2f;
+            increment -= 0.2f;
         }
-        r+=increment;
+        else if (r <= 0.0f)
+        {
+            increment += 0.2f;
+        }
+        r += increment;
 
         glBindVertexArray(VAO);
         glUseProgram(shader);
-        glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_INT,nullptr);
-        //glDrawArrays(GL_TRIANGLES,0,6);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        indexBuffer.Bind();
+        // glDrawArrays(GL_TRIANGLES,0,6);
 
         // double buffer tech
         glfwSwapBuffers(window);
@@ -235,5 +216,4 @@ int main()
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
-    
 }
