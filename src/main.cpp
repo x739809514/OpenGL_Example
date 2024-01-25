@@ -1,3 +1,4 @@
+#pragma once
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -10,6 +11,7 @@
 #include "Renderer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "VertexArray.h"
 
 enum class ShaderType
 {
@@ -157,16 +159,22 @@ int main()
         2, 3, 0};
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    //glBindVertexArray(VAO);
 
     VertexBuffer vb(4 * 2 * sizeof(float), positions);
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+    VertexLayout vl;
+    vl.Push<float>(2);
+    VertexArray va(VAO);
+    va.Bind();
+    va.AddBuffer(vb,vl);
+    // glEnableVertexAttribArray(0);
+    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
 
     //unsigned int ibo;
     IndexBuffer indexBuffer(6 * sizeof(unsigned int), indices);
-    glBindVertexArray(0);
+    //glBindVertexArray(0);
+    va.UnBind();
 
     ShaderProgram source = ParseShader("/Users/innovation/CodePlace/OpenGL_Example/src/resource/shader/Triangle.shader");
     std::cout << "Vertex" << std::endl;
@@ -202,7 +210,8 @@ int main()
         }
         r += increment;
 
-        glBindVertexArray(VAO);
+        //glBindVertexArray(VAO);
+        va.Bind();
         glUseProgram(shader);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
         indexBuffer.Bind();
