@@ -24,15 +24,15 @@ void VertexLayout::Push<float>(unsigned int count)
 {
     m_elements.push_back({GL_FLOAT,count,GL_FALSE});
     //Todo:is right?
-    m_stride+=sizeof(GLfloat);
+    m_stride+=count * VertexLayoutElement::GetSizeOfType(GL_FLOAT);
 }
 
 template<>
-void VertexLayout::Push<char>(unsigned int count)
+void VertexLayout::Push<unsigned char>(unsigned int count)
 {
     m_elements.push_back({GL_UNSIGNED_BYTE,count,GL_TRUE});
     //Todo:is right?
-    m_stride+=sizeof(GLchar);
+    m_stride+=count * VertexLayoutElement::GetSizeOfType(GL_UNSIGNED_BYTE);
 }
 
 template<>
@@ -40,5 +40,5 @@ void VertexLayout::Push<unsigned int>(unsigned int count)
 {
     m_elements.push_back({GL_UNSIGNED_INT,count,GL_FALSE});
     //Todo:is right?
-    m_stride+=sizeof(GLuint);
+    m_stride+= count * VertexLayoutElement::GetSizeOfType(GL_UNSIGNED_INT);
 }

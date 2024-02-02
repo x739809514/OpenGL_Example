@@ -6,7 +6,7 @@ struct VertexLayoutElement
 {
     unsigned int type;
     unsigned int count;
-    bool isNormalise;
+    unsigned char isNormalise;
 
     static unsigned int GetSizeOfType(unsigned int  type)
     {
