@@ -5,57 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
-#include <fstream>
-#include <sstream>
 
 #include "Renderer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "VertexArray.h"
-
-enum class ShaderType
-{
-    None = -1,
-    Vertex = 0,
-    Fragment = 1,
-};
-
-struct ShaderProgram
-{
-    std::string vertex;
-    std::string fragment;
-};
-
-static ShaderProgram ParseShader(const std::string filepath)
-{
-    std::ifstream inFile(filepath);
-    std::string line;
-    ShaderType type = ShaderType::None;
-    std::stringstream ss[2];
-
-    while (getline(inFile, line))
-    {
-        if (line.find("#Shader") != std::string::npos)
-        {
-            if (line.find("vertex") != std::string::npos)
-            {
-                // get vertex str
-                type = ShaderType::Vertex;
-            }
-            else if (line.find("fragment") != std::string::npos)
-            {
-                // get fragment str
-                type = ShaderType::Fragment;
-            }
-        }
-        else
-        {
-            ss[(int)type] << line << '\n';
-        }
-    }
-    inFile.close();
-    return {ss[0].str(), ss[1].str()};
-}
+#include "Shader.h"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
@@ -66,44 +21,6 @@ void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-}
-
-static unsigned int CompileShader(unsigned int type, std::string &source)
-{
-    unsigned int id = glCreateShader(type);
-    const char *str = source.c_str();
-    glShaderSource(id, 1, &str, NULL);
-    glCompileShader(id);
-
-    // Error handing
-    int success;
-    glGetShaderiv(id, GL_COMPILE_STATUS, &success);
-    if (success == GL_FALSE)
-    {
-        int length;
-        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-        char *info = (char *)alloca(length * sizeof(char));
-        glGetShaderInfoLog(id, length, &length, info);
-        std::cout << "Error: " << (type == GL_VERTEX_SHADER ? "vertex shader" : "fragment shader") << "Shader Compiled Failed!" << info << std::endl;
-        glDeleteShader(id);
-        return 0;
-    }
-
-    return id;
-}
-
-static unsigned int CreateShader(std::string &vertextShader, std::string &fragmentShader)
-{
-    unsigned int program = glCreateProgram();
-    unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertextShader);
-    unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-    glLinkProgram(program);
-    glValidateProgram(program);
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-    return program;
 }
 
 int main()
@@ -176,16 +93,20 @@ int main()
     //glBindVertexArray(0);
     va.UnBind();
 
-    ShaderProgram source = ParseShader("/Users/innovation/CodePlace/OpenGL_Example/src/resource/shader/Triangle.shader");
-    std::cout << "Vertex" << std::endl;
-    std::cout << source.vertex << std::endl;
-    std::cout << "Fragment" << std::endl;
-    std::cout << source.fragment << std::endl;
-    unsigned int shader = CreateShader(source.vertex, source.fragment);
+    // ShaderProgram source = ParseShader("/Users/innovation/CodePlace/OpenGL_Example/src/resource/shader/Triangle.shader");
+    // std::cout << "Vertex" << std::endl;
+    // std::cout << source.vertex << std::endl;
+    // std::cout << "Fragment" << std::endl;
+    // std::cout << source.fragment << std::endl;
+    // unsigned int shader = CreateShader(source.vertex, source.fragment);
+    Shader shader("/Users/innovation/CodePlace/OpenGL_Example/src/resource/shader/Triangle.shader");
+    int location = shader.GetLocationOfUniform("u_color");
 
-    int location = glGetUniformLocation(shader, "u_color");
+    // int location = glGetUniformLocation(shader, "u_color");
     float r = 0.0f;
     float increment = 0.0f;
+    shader.Bind();
+    // glUseProgram(0);
     // start rendering
     while (glfwWindowShouldClose(window) == false)
     {
@@ -196,10 +117,11 @@ int main()
         // clear color buffer
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if (location != -1)
-        {
-            glUniform4f(location, r, 0.8f, 0.5f, 1.0f);
-        }
+        shader.SetUniform4f(location,r, 0.8f, 0.5f, 1.0f);
+        // if (location != -1)
+        // {
+        //     glUniform4f(location, r, 0.8f, 0.5f, 1.0f);
+        // }
         if (r >= 1.0f)
         {
             increment -= 0.2f;
@@ -212,7 +134,8 @@ int main()
 
         //glBindVertexArray(VAO);
         va.Bind();
-        glUseProgram(shader);
+        // glUseProgram(shader);
+        shader.Bind();
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
         indexBuffer.Bind();
         // glDrawArrays(GL_TRIANGLES,0,6);
