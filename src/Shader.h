@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-
+#include <unordered_map>
 
 struct ShaderProgram
 {
@@ -13,12 +13,13 @@ class Shader
 private:
     unsigned int renderID;
     std::string filePath;
+    std::unordered_map<std::string,unsigned int> m_uniformLocationMap;
 public:
     Shader(std::string path);
     ~Shader();
 
-    void Bind();
-    void UnBind();
+    void Bind() const;
+    void UnBind() const;
 
     void SetUniform4f(int location, float v0, float v1, float f0, float f1);
     int GetLocationOfUniform(const std::string& name);

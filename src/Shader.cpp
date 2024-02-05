@@ -16,7 +16,7 @@ enum class ShaderType
 Shader::Shader(std::string path) : filePath(path), renderID(0)
 {
     ShaderProgram program = ParseShader();
-    renderID = CreateShader(program.vertex,program.fragment);
+    renderID = CreateShader(program.vertex, program.fragment);
 }
 
 Shader::~Shader()
@@ -24,20 +24,32 @@ Shader::~Shader()
     glDeleteShader(renderID);
 }
 
-void Shader::Bind()
+void Shader::Bind() const
 {
     glUseProgram(renderID);
 }
 
-void Shader::UnBind()
+void Shader::UnBind() const
 {
     glUseProgram(0);
 }
 
-
-int Shader::GetLocationOfUniform(const std::string& name)
+int Shader::GetLocationOfUniform(const std::string &name)
 {
+    if (m_uniformLocationMap.find(name) != m_uniformLocationMap.end())
+    {
+        return m_uniformLocationMap[name];
+    }
     int location = glGetUniformLocation(renderID, name.c_str());
+    if (location == -1)
+    {
+        std::cout << "warning: uniform" << name << "doesn't exits !" << std::endl;
+    }
+    else
+    {
+        m_uniformLocationMap[name] = location;
+    }
+
     return location;
 }
 

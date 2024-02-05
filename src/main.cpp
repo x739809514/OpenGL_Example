@@ -8,9 +8,6 @@
 
 #include "Renderer.h"
 #include "VertexBuffer.h"
-#include "IndexBuffer.h"
-#include "VertexArray.h"
-#include "Shader.h"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
@@ -107,13 +104,16 @@ int main()
     float increment = 0.0f;
     shader.Bind();
     // glUseProgram(0);
+
     // start rendering
+    Renderer renderer;
     while (glfwWindowShouldClose(window) == false)
     {
         // detect key escape event
         processInput(window);
         // set clear color
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        renderer.Clear();
         // clear color buffer
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -133,13 +133,13 @@ int main()
         r += increment;
 
         //glBindVertexArray(VAO);
-        va.Bind();
+        // va.Bind();
         // glUseProgram(shader);
-        shader.Bind();
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-        indexBuffer.Bind();
+        // shader.Bind();
+        // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        // indexBuffer.Bind();
         // glDrawArrays(GL_TRIANGLES,0,6);
-
+        renderer.Draw(va,indexBuffer,shader);
         // double buffer tech
         glfwSwapBuffers(window);
         // func call all the event since the last call

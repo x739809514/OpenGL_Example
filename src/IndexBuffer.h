@@ -7,6 +7,6 @@ private:
 public:
     IndexBuffer(unsigned int size, const void *data);
     virtual ~IndexBuffer();
-    void Bind();
-    void UnBind();
+    void Bind() const;
+    void UnBind() const;
 };

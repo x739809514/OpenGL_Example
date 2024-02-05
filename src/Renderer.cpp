@@ -18,3 +18,24 @@ static bool CheckError(const char* func, const char* file, int line)
     
 }
 #pragma endregion
+
+Renderer::Renderer()
+{
+}
+
+Renderer::~Renderer()
+{
+}
+
+void Renderer::Clear()
+{
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+}
+
+void Renderer::Draw(const VertexArray &va, const IndexBuffer &ib, const Shader &shader) const
+{
+    va.Bind();
+    ib.Bind();
+    shader.Bind();
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+}
