@@ -8,6 +8,7 @@
 
 #include "Renderer.h"
 #include "VertexBuffer.h"
+#include "Texture.h"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
@@ -59,25 +60,26 @@ int main()
     glViewport(0, 0, 800, 600);
 
     float positions[] = {
-        -0.5f,
-        -0.5f,
-        0.5f,
-        -0.5f,
-        0.5f,
-        0.5f,
-        -0.5f,
-        0.5f,
+        -0.5f,-0.5f,0.0f,0.0f,
+        0.5f,-0.5f,1.0f,0.0f,
+        0.5f,0.5f,1.0f,1.0f,
+        -0.5f,0.5f,0.0f,1.0f
     };
     unsigned int indices[] = {
         0, 1, 2,
         2, 3, 0};
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
     //glBindVertexArray(VAO);
 
-    VertexBuffer vb(4 * 2 * sizeof(float), positions);
+    VertexBuffer vb(4 * 4 * sizeof(float), positions);
 
     VertexLayout vl;
+    vl.Push<float>(2);
     vl.Push<float>(2);
     VertexArray va(VAO);
     va.Bind();
@@ -107,6 +109,9 @@ int main()
 
     // start rendering
     Renderer renderer;
+    Texture texture("/Users/innovation/CodePlace/OpenGL_Example/src/resource/texture/darksoul.png");
+    texture.Bind();
+    shader.SetUniform1i("u_Texture",0);
     while (glfwWindowShouldClose(window) == false)
     {
         // detect key escape event
@@ -122,6 +127,10 @@ int main()
         // {
         //     glUniform4f(location, r, 0.8f, 0.5f, 1.0f);
         // }
+
+        
+
+
         if (r >= 1.0f)
         {
             increment -= 0.2f;
