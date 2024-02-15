@@ -9,6 +9,8 @@
 #include "Renderer.h"
 #include "VertexBuffer.h"
 #include "Texture.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
@@ -92,6 +94,8 @@ int main()
     //glBindVertexArray(0);
     va.UnBind();
 
+    glm::mat4 proj = glm::ortho(-2.0f,2.0f,-1.5f,1.5f,-1.0f,1.0f);
+
     // ShaderProgram source = ParseShader("/Users/innovation/CodePlace/OpenGL_Example/src/resource/shader/Triangle.shader");
     // std::cout << "Vertex" << std::endl;
     // std::cout << source.vertex << std::endl;
@@ -105,6 +109,8 @@ int main()
     float r = 0.0f;
     float increment = 0.0f;
     shader.Bind();
+    shader.SetUniform4f("u_Color",0.8f,0.3f,0.8f,1.0f);
+    shader.SetUniformMat4f("u_MVP",proj);
     // glUseProgram(0);
 
     // start rendering
@@ -122,7 +128,7 @@ int main()
         // clear color buffer
         glClear(GL_COLOR_BUFFER_BIT);
 
-        shader.SetUniform4f(location,r, 0.8f, 0.5f, 1.0f);
+        shader.SetUniform4f("u_Color",r, 0.8f, 0.5f, 1.0f);
         // if (location != -1)
         // {
         //     glUniform4f(location, r, 0.8f, 0.5f, 1.0f);

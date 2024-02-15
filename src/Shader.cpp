@@ -53,22 +53,24 @@ int Shader::GetLocationOfUniform(const std::string &name)
     return location;
 }
 
-void Shader::SetUniform4f(int location, float v0, float f0, float f1, float f2)
+void Shader::SetUniform4f(const std::string &name, float v0, float f0, float f1, float f2)
 {
-    if (location != -1)
-    {
-        glUniform4f(location, v0, f0, f1, f2);
-    }
+    glUniform4f(GetLocationOfUniform(name), v0, f0, f1, f2);
 }
 
-void Shader::SetUniform1i(const std::string & name, int value)
+void Shader::SetUniform1i(const std::string &name, int value)
 {
-    glUniform1i(GetLocationOfUniform(name),value);
+    glUniform1i(GetLocationOfUniform(name), value);
 }
 
-void Shader::SetUniform1f(const std::string & name, float value)
+void Shader::SetUniform1f(const std::string &name, float value)
 {
-    glUniform1f(GetLocationOfUniform(name),value);
+    glUniform1f(GetLocationOfUniform(name), value);
+}
+
+void Shader::SetUniformMat4f(const std::string &name, const glm::mat4 &matrix)
+{
+    glUniformMatrix4fv(GetLocationOfUniform(name), 1, GL_FALSE, &matrix[0][0]);
 }
 
 ShaderProgram Shader::ParseShader()
