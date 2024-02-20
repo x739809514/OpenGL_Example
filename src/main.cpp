@@ -62,10 +62,10 @@ int main()
     glViewport(0, 0, 800, 600);
 
     float positions[] = {
-        100.0f, 100.0f, 0.0f, 0.0f,
-        300.0f, 100.0f, 1.0f, 0.0f,
-        300.0f, 300.0f, 1.0f, 1.0f,
-        100.0f, 300.0f, 0.0f, 1.0f};
+        -50.0f, -50.0f, 0.0f, 0.0f,
+        50.0f, -50.0f, 1.0f, 0.0f,
+        50.0f, 50.0f, 1.0f, 1.0f,
+        -50.0f, 50.0f, 0.0f, 1.0f};
     unsigned int indices[] = {
         0, 1, 2,
         2, 3, 0};
@@ -94,11 +94,10 @@ int main()
     va.UnBind();
 
     glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
-    // move camera 100 unit to right
     glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(200, 200, 0));
-
-    glm::mat4 mvp = proj * view * model;
+    // two tranlsate matrix
+    glm::vec3 translateA(200, 200, 0);
+    glm::vec3 translateB(400, 400, 0);
 
     // ShaderProgram source = ParseShader("/Users/innovation/CodePlace/OpenGL_Example/src/resource/shader/Triangle.shader");
     // std::cout << "Vertex" << std::endl;
@@ -114,7 +113,7 @@ int main()
     float increment = 0.0f;
     shader.Bind();
     shader.SetUniform4f("u_Color", 0.8f, 0.3f, 0.8f, 1.0f);
-    shader.SetUniformMat4f("u_MVP", mvp);
+
     // glUseProgram(0);
 
     // start rendering
@@ -131,6 +130,21 @@ int main()
         renderer.Clear();
         // clear color buffer
         glClear(GL_COLOR_BUFFER_BIT);
+
+        // 下面这种方式会产生大量的drawcall
+        {
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), translateA);
+            glm::mat4 mvp = proj * view * model;
+            shader.SetUniformMat4f("u_MVP", mvp);
+            renderer.Draw(va, indexBuffer, shader);
+        }
+
+        {
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), translateB);
+            glm::mat4 mvp = proj * view * model;
+            shader.SetUniformMat4f("u_MVP", mvp);
+            renderer.Draw(va, indexBuffer, shader);
+        }
 
         shader.SetUniform4f("u_Color", r, 0.8f, 0.5f, 1.0f);
         // if (location != -1)
@@ -155,7 +169,7 @@ int main()
         //  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
         //  indexBuffer.Bind();
         //  glDrawArrays(GL_TRIANGLES,0,6);
-        renderer.Draw(va, indexBuffer, shader);
+        //  renderer.Draw(va, indexBuffer, shader);
         // double buffer tech
         glfwSwapBuffers(window);
         // func call all the event since the last call
