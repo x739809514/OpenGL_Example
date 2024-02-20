@@ -11,6 +11,7 @@
 #include "Texture.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "Test/ColorTest.h"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
@@ -121,6 +122,7 @@ int main()
     Texture texture("/Users/innovation/CodePlace/OpenGL_Example/src/resource/texture/darksoul.png");
     texture.Bind();
     shader.SetUniform1i("u_Texture", 0);
+    ColorTest test;
     while (glfwWindowShouldClose(window) == false)
     {
         // detect key escape event
@@ -128,8 +130,11 @@ int main()
         // set clear color
         // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         renderer.Clear();
+        
+        test.onUpdate(0.0f);
         // clear color buffer
-        glClear(GL_COLOR_BUFFER_BIT);
+        test.onRender();
+        //glClear(GL_COLOR_BUFFER_BIT);
 
         // 下面这种方式会产生大量的drawcall
         {
